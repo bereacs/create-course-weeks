@@ -1,11 +1,21 @@
-import datetime, calendar
+import datetime, calendar, sys
 
 # Patterns
 MWF = 1
 TR  = 2
 
 # Choice of pattern
-pattern = MWF
+if len(sys.argv) == 1:
+  print "Usage:"
+  print "\tcreate-pages (MWF|TR)"
+  sys.exit()
+  
+if sys.argv[1] == "MWF":
+  pattern = MWF
+else:
+  pattern = TR
+
+
 
 # Make days?
 
@@ -34,8 +44,6 @@ def generate_dates(start_date, end_date):
     return alldates
 
 # Bump one day if we are a TR pattern.
-if pattern == TR:
-  start_date = start_date + datetime.timedelta(hours=24)  
 all_days = generate_dates(start_date, end_date)
 
 def getMonthName(date):
@@ -68,7 +76,14 @@ def pad (n, places):
   return result
   
 def make_week (directory, date, week_number, delta, count):
-  pg = open ('%s/%s-%s-%s-week-%s.md' % (directory, date.strftime("%Y"), date.strftime("%m"), pad(date.day, 2), pad(week_number, 2)), 'w')
+  pg = open ('%s/%s-%s-%s-week-%s.md' \
+            % (directory, date.strftime("%Y"), \
+            date.strftime("%m"), pad(date.day, 2), pad(week_number, 2)), 'w')
+
+  if pattern == TR:
+    date = date + datetime.timedelta(hours=24)
+    
+            
   pg.write('---\n')
   pg.write('title: Week %s \n' % week_number)
   pg.write('week: %s\n' % week_number)
@@ -76,7 +91,9 @@ def make_week (directory, date, week_number, delta, count):
   pg.write('layout: post\n')
   pg.write('---\n\n')
   
-  pg.write('# Week %s\n\n' % (week_number))
+  # We want to be able to put "due dates" in, so the
+  # template will write this in for me.
+  # pg.write('# Week %s\n\n' % (week_number))
   
 
   while count > 0:
