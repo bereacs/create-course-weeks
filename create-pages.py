@@ -75,7 +75,7 @@ def pad (n, places):
   result = '%s%s' % (padding, n)
   return result
   
-def make_week (directory, date, week_number, delta, count):
+def make_week (directory, date, week_number, template, delta, count):
   pg = open ('%s/%s-%s-%s-week-%s.md' \
             % (directory, date.strftime("%Y"), \
             date.strftime("%m"), pad(date.day, 2), pad(week_number, 2)), 'w')
@@ -99,9 +99,10 @@ def make_week (directory, date, week_number, delta, count):
   while count > 0:
     day_of_week = date.strftime("%A")
     pg.write('## %s, %s %s\n\n' % (day_of_week, getMonthName(date), getDayNumber(date)))
-    pg.write ('### Before Class\n\n')
-    pg.write ('### In Class\n\n')
-    pg.write ('### For Next Class\n\n\n')
+    #pg.write ('### Before Class\n\n')
+    #pg.write ('### In Class\n\n')
+    #pg.write ('### For Next Class\n\n\n')
+    pg.write("%s" % template)
     pg.write ('<!-- # # # # # # # # # # # # # # # # # # # # # # # # # # # -->\n\n')
     
     date += datetime.timedelta(hours = (24*delta))
@@ -112,6 +113,9 @@ def make_week (directory, date, week_number, delta, count):
 def inRange(i):
   return i < len(all_days)
 
+intem = open('template.md', 'r')
+template = intem.read()
+
 # Pattern MWF
 if pattern == MWF:
   i = 0
@@ -119,7 +123,7 @@ if pattern == MWF:
   while (inRange(i)):
     print all_days[i]
     make_day('days', 'Monday', all_days[i])
-    make_week('weeks', all_days[i], week_number, 2, 3)
+    make_week('weeks', all_days[i], week_number, template, 2, 3)
     week_number += 1
     i += 2
     if inRange(i):
@@ -139,7 +143,7 @@ elif pattern == TR:
   while (i < len(all_days)):
     print all_days[i]
     make_day('days', 'Tuesday', all_days[i])
-    make_week('weeks', all_days[i], week_number, 2, 2)
+    make_week('weeks', all_days[i], week_number, template, 2, 2)
     week_number += 1
     i += 2
     print all_days[i]
