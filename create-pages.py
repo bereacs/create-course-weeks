@@ -3,19 +3,25 @@ import datetime, calendar, sys
 # Patterns
 MWF = 1
 TR  = 2
+T   = 3
 
 # Choice of pattern
-if len(sys.argv) == 1:
+if len(sys.argv) < 2:
   print "Usage:"
-  print "\tcreate-pages (MWF|TR)"
+  print "\tcreate-pages (MWF|TR) <file-prefix>"
   sys.exit()
   
 if sys.argv[1] == "MWF":
   pattern = MWF
-else:
+elif sys.argv[1] == "TR":
   pattern = TR
+else:
+  pattern = T
 
-
+if len(sys.argv) == 2:
+  file_prefix = ""
+else:
+  file_prefix = sys.argv[2]
 
 # Make days?
 
@@ -76,11 +82,17 @@ def pad (n, places):
   return result
   
 def make_week (directory, date, week_number, template, delta, count):
-  pg = open ('%s/%s-%s-%s-week-%s.md' \
-            % (directory, date.strftime("%Y"), \
-            date.strftime("%m"), pad(date.day, 2), pad(week_number, 2)), 'w')
-
-  if pattern == TR:
+  if file_prefix == "":
+    pg = open ('%s/%s-%s-%s-%s.md' \
+              % (directory, date.strftime("%Y"), \
+              date.strftime("%m"), pad(date.day, 2), pad(week_number, 2)), 'w')
+  else:
+    pg = open ('%s/%s-%s-%s-%s-%s.md' \
+              % (directory, date.strftime("%Y"), \
+              date.strftime("%m"), pad(date.day, 2), pad(week_number, 2),
+              file_prefix), 'w')
+              
+  if (pattern == TR) or (pattern == T):
     date = date + datetime.timedelta(hours=24)
     
             
@@ -149,3 +161,14 @@ elif pattern == TR:
     print all_days[i]
     make_day('days', 'Thursday', all_days[i])
     i += 5
+
+# Pattern T
+elif pattern == T:
+  i = 0
+  week_number = 1
+  while (i < len(all_days)):
+    print all_days[i]
+    make_day('days', 'Tuesday', all_days[i])
+    make_week('weeks', all_days[i], week_number, template, 2, 1)
+    week_number += 1
+    i += 7
