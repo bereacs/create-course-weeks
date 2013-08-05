@@ -3,12 +3,14 @@
          racket/pretty
          mzlib/string)
 
+; start_date = datetime.date(2013, 8, 21)
+; end_date = datetime.date(2013, 12, 5)
 
 (define start-date 
-  (date* 0 0 0 7 1 2013 1 6 #f -18000 0 "EST"))
+  (date* 0 0 0 21 8 2013 1 6 #f -18000 0 "EST"))
 
 (define end-date
-  (date* 0 0 0 26 4 2013 5 115 #f -18000 0 "EST"))
+  (date* 0 0 0 5 12 2013 5 115 #f -18000 0 "EST"))
 
 #|
 (struct date (second
@@ -26,9 +28,16 @@
 (define DAY+1 (* 24 (* 60 60)))
 (define DAY+5 (* 5 DAY+1))
 (define DAY+7 (* 7 DAY+1))
+(define DAY+14 (* 14 DAY+1))
 
-(define (add-day d)
-  (seconds->date (+ DAY+1 (date->seconds d))))
+
+(define (date- d duration)
+  (seconds->date (- (date->seconds d) duration)))
+(define (date+ d duration)
+  (seconds->date (+ (date->seconds d) duration)))
+
+(define (add-day d) (date+ d DAY+1))
+
 
 (define (add-days d count)
   (for ([i (in-range 0 count)])
@@ -339,6 +348,41 @@
           )
         ))))
 
+(define tr
+  (let ([counter 0])
+    (λ ()
+      (λ (the-date y m d yd dow)
+        (cond
+          [(tr? the-date)
+           
+           (set! counter (add1 counter))
+           
+           `(page
+             (file ,(format "~a-~a.md"
+                            (pad2 m) (pad2 d) 
+                            ))
+             (yaml
+              (title "")
+              (activity "")
+              (date ,(format "~a~a~a" y (pad2 m) (pad2 d)))
+              
+              ,(let ([release-date
+                     (date- the-date DAY+7)])
+               `(release ,(format "~a~a~a"
+                                  (date-year release-date)
+                                  (pad2 (date-month release-date))
+                                  (pad2 (date-day release-date)))))
+              (layout default)
+                                
+              )
+             (content
+              (blank 1)
+              (=== "In Class")
+              (blank 1)
+              ))]
+          )
+        ))))
+
 (define (generate-pages lod day-filter? template args)
   (for/list ([d (filter day-filter? lod)])
     ((apply template args)
@@ -448,9 +492,20 @@
                    comporg
                    (list))))
 
+(define (generate-tr)
+  (for-each 
+   render-page 
+   (generate-pages (reverse (make-list-of-dates)) 
+                   (λ (d) (or (tr? d) ))
+                   tr
+                   (list))))
+
 
 (define (run-aad)
   (generate-aaad '(Cupcake Donut Eclair Froyo)))
 
 (define (run-craftoe)
   (generate-craftoe))
+
+(define (run-ts)
+  (generate-tr))

@@ -4,11 +4,12 @@ import datetime, calendar, sys
 MWF = 1
 TR  = 2
 T   = 3
+MW  = 4
 
 # Choice of pattern
 if len(sys.argv) < 2:
   print "Usage:"
-  print "\tcreate-pages (MWF|TR) <file-prefix>"
+  print "\tcreate-pages (MWF|MW|TR|T) <file-prefix>"
   sys.exit()
   
 if sys.argv[1] == "MWF":
@@ -33,8 +34,8 @@ shouldMakeDays = False
 # January 7, 2013 is a Monday
 # January 8, 2013 is a Tuesday
 
-start_date = datetime.date(2013, 1, 7)
-end_date = datetime.date(2013, 4, 25)
+start_date = datetime.date(2013, 8, 21)
+end_date = datetime.date(2013, 12, 5)
 
 ############################################################
 ###### Do not edit past this point                    ######
@@ -147,6 +148,21 @@ if pattern == MWF:
       make_day('days', 'Friday', all_days[i])
       # Skip to next Monday
       i += 3
+      
+elif pattern == MW:
+  i = 0
+  week_number = 1
+  while (inRange(i)):
+    print all_days[i]
+    make_day('days', 'Monday', all_days[i])
+    make_week('weeks', all_days[i], week_number, template, 2, 2)
+    week_number += 1
+    i += 2
+    if inRange(i):
+      print all_days[i]
+      make_day('days', 'Wednesday', all_days[i])
+      # Skip to next Monday
+      i += 5
       
 # Pattern TR
 elif pattern == TR:
