@@ -3,14 +3,16 @@
          racket/pretty
          mzlib/string)
 
-; start_date = datetime.date(2013, 8, 21)
-; end_date = datetime.date(2013, 12, 5)
+(provide (all-defined-out))
 
 (define start-date 
-  (date* 0 0 0 21 8 2013 1 6 #f -18000 0 "EST"))
+  (make-parameter (date* 0 0 0 21 8 2013 1 6 #f -18000 0 "EST")))
 
 (define end-date
-  (date* 0 0 0 5 12 2013 5 115 #f -18000 0 "EST"))
+  (make-parameter (date* 0 0 0 5 12 2013 5 115 #f -18000 0 "EST")))
+
+(define output-directory (make-parameter "weeks"))
+
 
 #|
 (struct date (second
@@ -46,10 +48,10 @@
 
 (define (make-list-of-dates)
   (define result '())
-  (define d start-date)
-  (for ([c (in-range (date-year-day start-date)
+  (define d (start-date))
+  (for ([c (in-range (date-year-day (start-date))
                      ;; add1 makes it inclusive.
-                     (add1 (date-year-day end-date)))])
+                     (add1 (date-year-day (end-date))))])
     (set! result (cons d result))
     (set! d (add-day d)))
   result)
@@ -114,274 +116,13 @@
 
 (define (get-week-number yd)
   (define diff (- (date-year-day yd)
-                  (date-year-day start-date)))
+                  (date-year-day (start-date))))
   (add1 (quotient diff 7)))
 
-(define (aaad team)
-  (λ (the-date y m d yd dow)
-    (define week# (get-week-number the-date))
-    (cond
-      [(tuesday? the-date)
-       (define purpose "Goals")
-       `(page
-         (file ,(format "~a-~a-~a-~a-~a-~a.md"
-                        y (pad2 m) (pad2 d) 
-                        (->lower team) 
-                        (->lower purpose)
-                        (pad2 week#)))
-         (yaml
-          (title ,(format "Team ~a: Week ~a ~a" team week# purpose))
-          (week ,week#)
-          (category ,(->lower team))
-          (layout default)
-          (publish no))
-         (content
-          (== ,(format "~a, ~a ~a" (dow->name dow) (month->name m) (pretty-day d)))
-          (blank 1)
-          (=== ,purpose)
-          (blank 1)
-          (seq 
-           "| **Role** |**Task** |"
-           "| {{site.lead}}| Keep us on track. |"
-           "| {{site.docu}}| Keep us writing. |"
-           "| {{site.advocate}}| Make it usable. |"
-           "| {{site.entrepreneur}}| Take over the world. |"
-           )
-          ))]
-      [(thursday? the-date)
-       (define purpose "Update")
-       `(page
-         (file ,(format "~a-~a-~a-~a-~a-~a.md"
-                        y (pad2 m) (pad2 d) 
-                        (->lower team) 
-                        (->lower purpose)
-                        (pad2 week#)))
-         (yaml
-          (title ,(format "Team ~a: Week ~a ~a" team week# purpose))
-          (week ,week#)
-          (category ,(->lower team))
-          (layout default)
-          (publish no))
-         (content
-          (== ,(format "~a, ~a ~a" (dow->name dow) (month->name m) (pretty-day d)))
-          (blank 1)
-          (=== ,purpose)
-          ))]
-      [(monday? the-date)
-       (define purpose "Reflection")
-       `(page
-         (file ,(format "~a-~a-~a-~a-~a-~a.md"
-                        y (pad2 m) (pad2 d) 
-                        (->lower team) 
-                        (->lower purpose)
-                        (pad2 week#)))
-         (yaml
-          (title ,(format "Team ~a: Week ~a ~a" team week# purpose))
-          (week ,week#)
-          (category ,(->lower team))
-          (layout default)
-          (publish no))
-         (content
-          (== ,(format "~a, ~a ~a" (dow->name dow) (month->name m) (pretty-day d)))
-          (blank 1)
-          (=== ,purpose)
-          (blank 1)
-          (==== "Summary")
-          (blank 1)
-          (seq
-           "| **Role** |**Task** | **Done** |"
-           "| {{site.lead}}| Keep us on track. | {{site.done}} |"
-           "| {{site.docu}}| Keep us writing. | {{site.notdone}} |"
-           "| {{site.advocate}}| Make it usable. | {{site.done}} |"
-           "| {{site.entrepreneur}}| Take over the world. | {{site.done}} |"
-           )
-          (blank 1)
-          (==== "{{site.lead}}" "Process Lead")
-          (blank 1)
-          (==== "{{site.advocate}}" "Advocate")
-          (blank 1)
-          (==== "{{site.docu}}" "Documentation Lead")
-          (blank 1)
-          (==== "{{site.entrepreneur}}" "Entrepreneur")
-          ))]
-      )
-    ))
 
 
-(define craftoe
-  (let ([counter 0])
-    (λ ()
-      (λ (the-date y m d yd dow)
-        (define week# (get-week-number the-date))
-        (cond
-          [(sunday? the-date)
-           `(page
-             (file ,(format "~a-~a-~a-w~a.md"
-                            y (pad2 m) (pad2 d) 
-                            (pad2 week#)))
-             (yaml
-              (title ,(format "Week ~a" week# ))
-              (slug "...")
-              (week ,week#)
-              (category "week")
-              (layout post)
-              (publish no))
-             (content
-              (blank 1)))]
-          
-          [(mwf? the-date)
-           
-           (set! counter (add1 counter))
-           
-           `(page
-             (file ,(format "~a-~a-~a-~a.md"
-                            y (pad2 m) (pad2 d) 
-                            (pad3 counter)))
-             (yaml
-              (title "")
-              (category "day")
-              (layout post)
-              (publish no)
-              )
-             (content
-              (blank 1)
-              (=== "Due Today")
-              (blank 1)
-              (=== "In Class")
-              (blank 1)
-              (=== "Launched Today")
-              ))]
-          )
-        ))))
 
-(define ba4abw
-  (let ([counter 0])
-    (λ ()
-      (λ (the-date y m d yd dow)
-        (define week# (get-week-number the-date))
-        (cond
-          [(sunday? the-date)
-           `(page
-             (file ,(format "~a-~a-~a-w~a.md"
-                            y (pad2 m) (pad2 d) 
-                            (pad2 week#)))
-             (yaml
-              (title ,(format "Week ~a" week# ))
-              (slug "...")
-              (week ,week#)
-              (category "week")
-              (layout post)
-              (publish no))
-             (content
-              (blank 1)))]
-          
-          [(tr? the-date)
-           
-           (set! counter (add1 counter))
-           
-           `(page
-             (file ,(format "~a-~a-~a-~a.md"
-                            y (pad2 m) (pad2 d) 
-                            (pad3 counter)))
-             (yaml
-              (title "")
-              (category "day")
-              (layout post)
-              (publish no)
-              )
-             (content
-              (blank 1)
-              (=== "Due Today")
-              (blank 1)
-              (=== "Team Time")
-              (blank 1)
-              (=== "In Class")
-              (blank 1)
-              (=== "Launched Today")
-              ))]
-          )
-        ))))
 
-(define comporg
-  (let ([counter 0])
-    (λ ()
-      (λ (the-date y m d yd dow)
-        (define week# (get-week-number the-date))
-        (cond
-          [(sunday? the-date)
-           `(page
-             (file ,(format "~a-~a-~a-w~a.md"
-                            y (pad2 m) (pad2 d) 
-                            (pad2 week#)))
-             (yaml
-              (title ,(format "Week ~a" week# ))
-              (slug "...")
-              (week ,week#)
-              (category "week")
-              (layout post)
-              (publish no))
-             (content
-              (blank 1)))]
-          
-          [(tr? the-date)
-           
-           (set! counter (add1 counter))
-           
-           `(page
-             (file ,(format "~a-~a-~a-~a.md"
-                            y (pad2 m) (pad2 d) 
-                            (pad3 counter)))
-             (yaml
-              (title "")
-              (category "day")
-              (layout post)
-              (publish no)
-              )
-             (content
-              (blank 1)
-              (=== "Due Today")
-              (blank 1)
-              (=== "In Class")
-              (blank 1)
-              (=== "Launched Today")
-              ))]
-          )
-        ))))
-
-(define tr
-  (let ([counter 0])
-    (λ ()
-      (λ (the-date y m d yd dow)
-        (cond
-          [(tr? the-date)
-           
-           (set! counter (add1 counter))
-           
-           `(page
-             (file ,(format "~a-~a.md"
-                            (pad2 m) (pad2 d) 
-                            ))
-             (yaml
-              (title "")
-              (activity "")
-              (date ,(format "~a~a~a" y (pad2 m) (pad2 d)))
-              
-              ,(let ([release-date
-                     (date- the-date DAY+7)])
-               `(release ,(format "~a~a~a"
-                                  (date-year release-date)
-                                  (pad2 (date-month release-date))
-                                  (pad2 (date-day release-date)))))
-              (layout default)
-                                
-              )
-             (content
-              (blank 1)
-              (=== "In Class")
-              (blank 1)
-              ))]
-          )
-        ))))
 
 (define (generate-pages lod day-filter? template args)
   (for/list ([d (filter day-filter? lod)])
@@ -440,7 +181,10 @@
 (define (render-page p)
   (match p
     [`(page ,f ,y ,c)
-     (let* ([op (open-output-file (format "weeks/~a" (second f)) #:exists 'replace)]
+     (unless (directory-exists? (output-directory))
+       (make-directory (output-directory)))
+     
+     (let* ([op (open-output-file (format "~a/~a" (output-directory) (second f)) #:exists 'replace)]
             [yaml (render-page y)]
             [content (render-page c)])
        (fprintf op
@@ -456,56 +200,5 @@
     ))
 
 
-(define (generate-aaad teams)
-  (for ([t teams])
-    (for-each 
-     render-page 
-     (generate-pages (make-list-of-dates) (λ (d) (or (monday? d)
-                                                     (tuesday? d)
-                                                     (thursday? d)))
-                     aaad (list t)))))
-
-(define (generate-craftoe)
-  (for-each 
-   render-page 
-   (generate-pages (reverse (make-list-of-dates)) 
-                   (λ (d) (or (mwf? d)
-                              (sunday? d)))
-                   craftoe
-                   (list))))
-
-(define (generate-ba4abw)
-  (for-each 
-   render-page 
-   (generate-pages (reverse (make-list-of-dates)) 
-                   (λ (d) (or (tr? d)
-                              (sunday? d)))
-                   ba4abw
-                   (list))))
-
-(define (generate-comporg)
-  (for-each 
-   render-page 
-   (generate-pages (reverse (make-list-of-dates)) 
-                   (λ (d) (or (tr? d)
-                              (sunday? d)))
-                   comporg
-                   (list))))
-
-(define (generate-tr)
-  (for-each 
-   render-page 
-   (generate-pages (reverse (make-list-of-dates)) 
-                   (λ (d) (or (tr? d) ))
-                   tr
-                   (list))))
 
 
-(define (run-aad)
-  (generate-aaad '(Cupcake Donut Eclair Froyo)))
-
-(define (run-craftoe)
-  (generate-craftoe))
-
-(define (run-ts)
-  (generate-tr))

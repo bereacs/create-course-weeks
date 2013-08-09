@@ -4,7 +4,7 @@ Update the title:
 Team Donut Week 1
 
 or similar.
-{% comment %}
+{% endcomment %}
 
 ### Goals 
 
@@ -46,11 +46,11 @@ Each team member is responsible for a longer-form update. It does not need to be
 
 {% endcomment %}
 
-#### Process Lead
+#### {{site.lead}} Process Lead
 
-#### Documentation Lead
+#### {{site.docu}} Documentation Lead
 
-#### Advocate
+#### {{site.advocate}} Advocate
 
-#### Entrepreneur
+#### {{site.entrepreneur}} Entrepreneur
 
