@@ -62,6 +62,9 @@
 (define (tr? d)
   (member (date-week-day d) '(2 4)))
 
+(define (mw? d)
+  (member (date-week-day d) '(1 3)))
+
 (define (t? d)
   (member (date-week-day d) '(2)))
 
